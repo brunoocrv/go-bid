@@ -1,4 +1,22 @@
 services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - ${GOBID_APP_PORT:-8080}:8080
+    environment:
+      - GOBID_APP_PORT=${GOBID_APP_PORT}
+      - GOBID_DB_PORT=${GOBID_DB_PORT}
+      - GOBID_DB_NAME=${GOBID_DB_NAME}
+      - GOBID_DB_USER=${GOBID_DB_USER}
+      - GOBID_DB_PASSWORD=${GOBID_DB_PASSWORD}
+      - GOBID_DB_HOST=${GOBID_DB_HOST}
+      - GOBID_CSRF_TOKEN=${GOBID_CSRF_TOKEN}
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: unless-stopped
   db:
     image: postgres:latest
     restart: unless-stopped
@@ -10,6 +28,11 @@ services:
       POSTGRES_DB: ${GOBID_DB_NAME}
     volumes:
       - db:/var/lib/postgresql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${GOBID_DB_USER} -d ${GOBID_DB_NAME}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
 
 volumes:
   db:

@@ -74,8 +74,13 @@ func main() {
 
 	api.BindRoutes()
 
-	fmt.Println("god-bid service started at port :8080")
-	if err := http.ListenAndServe("localhost:8080", api.Router); err != nil {
+	port := os.Getenv("GOBID_APP_PORT")
+	if port == "" {
+		port = "8080"
+	}
+
+	fmt.Printf("god-bid service started at port :%s\n", port)
+	if err := http.ListenAndServe(":"+port, api.Router); err != nil {
 		fmt.Println("error starting server:", err)
 		panic(err)
 	}
